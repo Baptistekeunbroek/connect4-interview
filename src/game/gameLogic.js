@@ -106,7 +106,16 @@ async function askPlayerActionType() {
             if (answer2 === "y") {
               resolve(anvil());
             } else {
-              resolve(askPlayerTokenSpot());
+              rl.question(
+                "Do you want to use the Race Car power? (y/n) ",
+                (answer3) => {
+                  if (answer3 === "y") {
+                    resolve(RaceCar());
+                  } else {
+                    resolve(askPlayerTokenSpot());
+                  }
+                }
+              );
             }
           }
         );
@@ -204,6 +213,40 @@ function anvil() {
         resolve(anvil());
       }
     });
+  });
+}
+
+function RaceCar() {
+  console.log(
+    "You have won the race car power up ! This clear a whole row of token."
+  );
+  return new Promise((resolve) => {
+    rl.question(
+      "Where do you want to place your race car?(column row)",
+      (answer) => {
+        const [x, y] = answer.split(" ").map(Number);
+        if (
+          !isNaN(x) &&
+          !isNaN(y) &&
+          x >= 1 &&
+          x <= columns &&
+          y >= 1 &&
+          y <= rows
+        ) {
+          gameTable[y - 1][x - 1] = "C";
+          for (let i = x - 1; i < columns; i++) {
+            console.log(i, "i");
+            gameTable[y - 1][i] = ".";
+          }
+          console.log("Updated game table:");
+          displayTable();
+          resolve();
+        } else {
+          console.log("Invalid move");
+          resolve(anvil());
+        }
+      }
+    );
   });
 }
 
