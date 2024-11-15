@@ -61,27 +61,39 @@ async function askPlayerActionType() {
     });
   });
 }
-
 function askPlayerPopOutSpot() {
   return new Promise((resolve) => {
-    rl.question("Which token do you want to Pop Out? (y,x) ", (answer) => {
-      const [x, y] = answer.split(" ").map(Number);
-      if (
-        !isNaN(x) &&
-        !isNaN(y) &&
-        x >= 1 &&
-        x <= columns &&
-        y >= 1 &&
-        y <= rows &&
-        gameTable[y - 1][x - 1] !== currentPlayer
-      ) {
-        gameTable[y - 1][x - 1] = ".";
-        resolve();
-      } else {
-        console.log("Invalid move");
-        resolve(askPlayerPopOutSpot());
+    rl.question(
+      "Which token do you want to Pop Out? (column,row) ",
+      (answer) => {
+        const [x, y] = answer.split(" ").map(Number);
+        if (
+          !isNaN(x) &&
+          !isNaN(y) &&
+          x >= 1 &&
+          x <= columns &&
+          y >= 1 &&
+          y <= rows &&
+          gameTable[y - 1][x - 1] !== currentPlayer
+        ) {
+          gameTable[y - 1][x - 1] = ".";
+
+          // Shift tokens downward in the column
+          for (let i = y - 1; i > 0; i--) {
+            console.log(i, "i");
+            gameTable[i][x - 1] = gameTable[i - 1][x - 1];
+            gameTable[i - 1][x - 1] = ".";
+          }
+
+          console.log("Updated game table:");
+          displayTable();
+          resolve();
+        } else {
+          console.log("Invalid move. Please select a valid token.");
+          resolve(askPlayerPopOutSpot()); // Retry if input is invalid
+        }
       }
-    });
+    );
   });
 }
 
