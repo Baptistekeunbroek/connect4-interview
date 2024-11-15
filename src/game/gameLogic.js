@@ -1,28 +1,71 @@
 const { resolve } = require("path");
 const readline = require("readline");
-let gameTable = [];
-let columns = 7;
-let rows = 6;
-const columnLabels = ["1", "2", "3", "4", "5", "6", "7"];
 let currentPlayer = "X";
+let gameTable = [];
+let columns = 0;
+let rows = 0;
+let columnLabels = [];
 
-function play() {
-  createTable();
+async function play() {
+  await createTable();
   playerMove();
 }
 
 async function createTable() {
-  for (let i = 0; i < columns; i++) {
-    gameTable[i] = ["1"];
-    for (let j = 0; j < columns; j++) {
-      gameTable[i][j] = ".";
-    }
-  }
-  console.log("   " + columnLabels.join(" "));
+  return new Promise((resolve) => {
+    rl.question(
+      "Do you want to play Connect4 or Connect5? (4/5) ",
+      (answer) => {
+        if (answer === "4") {
+          gameTable = [];
+          columns = 7;
+          rows = 6;
+          columnLabels = ["1", "2", "3", "4", "5", "6", "7"];
+          for (let i = 0; i < columns; i++) {
+            gameTable[i] = ["1"];
+            for (let j = 0; j < columns; j++) {
+              gameTable[i][j] = ".";
+            }
+          }
+          console.log("   " + columnLabels.join(" "));
 
-  for (let i = 0; i < rows; i++) {
-    console.log(`${i + 1}  ${gameTable[i].join(" ")}`);
-  }
+          for (let i = 0; i < rows; i++) {
+            console.log(`${i + 1}  ${gameTable[i].join(" ")}`);
+          }
+          resolve();
+        } else if (answer === "5") {
+          gameTable = [];
+          columns = 9;
+          rows = 6;
+          columnLabels = ["1", "2", "3", "4", "5", "6", "7", "8", "9"];
+          for (let i = 0; i < columns; i++) {
+            gameTable[i] = ["1"];
+            for (let j = 0; j < columns; j++) {
+              gameTable[i][j] = ".";
+            }
+          }
+          console.log("   " + columnLabels.join(" "));
+
+          for (let i = 0; i < rows; i++) {
+            console.log(`${i + 1}  ${gameTable[i].join(" ")}`);
+          }
+          resolve();
+        }
+      }
+    );
+  });
+}
+
+async function askPlayerActionType() {
+  return new Promise((resolve) => {
+    rl.question("Do you want to Pop Out a token? (y/n) ", (answer) => {
+      if (answer === "y") {
+        resolve(askPlayerPopOutSpot());
+      } else {
+        resolve(askPlayerTokenSpot());
+      }
+    });
+  });
 }
 
 async function playerMove() {
@@ -33,6 +76,7 @@ async function playerMove() {
   if (checkWinner()) {
     console.log(`Player ${currentPlayer} wins!`);
     rl.close();
+    return;
   }
   currentPlayer = currentPlayer === "X" ? "O" : "X";
 
@@ -74,11 +118,10 @@ function askPlayerPopOutSpot() {
           x <= columns &&
           y >= 1 &&
           y <= rows &&
-          gameTable[y - 1][x - 1] !== currentPlayer
+          gameTable[y - 1][x - 1] !== "."
         ) {
           gameTable[y - 1][x - 1] = ".";
 
-          // Shift tokens downward in the column
           for (let i = y - 1; i > 0; i--) {
             console.log(i, "i");
             gameTable[i][x - 1] = gameTable[i - 1][x - 1];
@@ -90,7 +133,7 @@ function askPlayerPopOutSpot() {
           resolve();
         } else {
           console.log("Invalid move. Please select a valid token.");
-          resolve(askPlayerPopOutSpot()); // Retry if input is invalid
+          resolve(askPlayerPopOutSpot());
         }
       }
     );
@@ -121,36 +164,77 @@ function askPlayerTokenSpot() {
 }
 
 function checkWinner() {
-  for (let i = 0; i < rows; i++) {
-    for (let j = 0; j < columns; j++) {
-      if (gameTable[i][j] === currentPlayer) {
-        if (
-          gameTable[i][j + 1] === currentPlayer &&
-          gameTable[i][j + 2] === currentPlayer &&
-          gameTable[i][j + 3] === currentPlayer
-        ) {
-          return true;
+  if ((rows === 6) & (columns === 7)) {
+    for (let i = 0; i < rows; i++) {
+      for (let j = 0; j < columns; j++) {
+        if (gameTable[i][j] === currentPlayer) {
+          if (
+            gameTable[i][j + 1] === currentPlayer &&
+            gameTable[i][j + 2] === currentPlayer &&
+            gameTable[i][j + 3] === currentPlayer
+          ) {
+            return true;
+          }
+          if (
+            gameTable[i + 1][j] === currentPlayer &&
+            gameTable[i + 2][j] === currentPlayer &&
+            gameTable[i + 3][j] === currentPlayer
+          ) {
+            return true;
+          }
+          if (
+            gameTable[i + 1][j + 1] === currentPlayer &&
+            gameTable[i + 2][j + 2] === currentPlayer &&
+            gameTable[i + 3][j + 3] === currentPlayer
+          ) {
+            return true;
+          }
+          if (
+            gameTable[i + 1][j - 1] === currentPlayer &&
+            gameTable[i + 2][j - 2] === currentPlayer &&
+            gameTable[i + 3][j - 3] === currentPlayer
+          ) {
+            return true;
+          }
         }
-        if (
-          gameTable[i + 1][j] === currentPlayer &&
-          gameTable[i + 2][j] === currentPlayer &&
-          gameTable[i + 3][j] === currentPlayer
-        ) {
-          return true;
-        }
-        if (
-          gameTable[i + 1][j + 1] === currentPlayer &&
-          gameTable[i + 2][j + 2] === currentPlayer &&
-          gameTable[i + 3][j + 3] === currentPlayer
-        ) {
-          return true;
-        }
-        if (
-          gameTable[i + 1][j - 1] === currentPlayer &&
-          gameTable[i + 2][j - 2] === currentPlayer &&
-          gameTable[i + 3][j - 3] === currentPlayer
-        ) {
-          return true;
+      }
+    }
+  } else if ((rows === 6) & (columns === 9)) {
+    for (let i = 0; i < rows; i++) {
+      for (let j = 0; j < columns; j++) {
+        if (gameTable[i][j] === currentPlayer) {
+          if (
+            gameTable[i][j + 1] === currentPlayer &&
+            gameTable[i][j + 2] === currentPlayer &&
+            gameTable[i][j + 3] === currentPlayer &&
+            gameTable[i][j + 4] === currentPlayer
+          ) {
+            return true;
+          }
+          if (
+            gameTable[i + 1][j] === currentPlayer &&
+            gameTable[i + 2][j] === currentPlayer &&
+            gameTable[i + 3][j] === currentPlayer &&
+            gameTable[i + 4][j] === currentPlayer
+          ) {
+            return true;
+          }
+          if (
+            gameTable[i + 1][j + 1] === currentPlayer &&
+            gameTable[i + 2][j + 2] === currentPlayer &&
+            gameTable[i + 3][j + 3] === currentPlayer &&
+            gameTable[i + 4][j + 4] === currentPlayer
+          ) {
+            return true;
+          }
+          if (
+            gameTable[i + 1][j - 1] === currentPlayer &&
+            gameTable[i + 2][j - 2] === currentPlayer &&
+            gameTable[i + 3][j - 3] === currentPlayer &&
+            gameTable[i + 4][j - 4] === currentPlayer
+          ) {
+            return true;
+          }
         }
       }
     }
