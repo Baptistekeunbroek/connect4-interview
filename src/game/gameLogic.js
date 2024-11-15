@@ -100,7 +100,16 @@ async function askPlayerActionType() {
       if (answer === "y") {
         resolve(askPlayerPopOutSpot());
       } else {
-        resolve(askPlayerTokenSpot());
+        rl.question(
+          "Do you want to use the Anvile Power? (y/n) ",
+          (answer2) => {
+            if (answer2 === "y") {
+              resolve(anvil());
+            } else {
+              resolve(askPlayerTokenSpot());
+            }
+          }
+        );
       }
     });
   });
@@ -158,6 +167,41 @@ function askPlayerTokenSpot() {
       } else {
         console.log("Invalid move");
         resolve(askPlayerTokenSpot());
+      }
+    });
+  });
+}
+
+function anvil() {
+  console.log(
+    "You have won the anvil power up ! This removes all pieces below it when played, leaving the Anvil at the bottom row of the board."
+  );
+  return new Promise((resolve) => {
+    rl.question("Where do you want to place your anvil?(y x)", (answer) => {
+      const [x, y] = answer.split(" ").map(Number);
+      if (
+        !isNaN(x) &&
+        !isNaN(y) &&
+        x >= 1 &&
+        x <= columns &&
+        y >= 1 &&
+        y <= rows
+      ) {
+        gameTable[y - 1][x - 1] = "A";
+        for (let i = y - 1; i < rows; i++) {
+          console.log(i, "i");
+          gameTable[i][x - 1] = gameTable[y - 1][x - 1];
+          gameTable[i][x - 1] = ".";
+          if (i === rows - 1) {
+            gameTable[i][x - 1] = "A";
+          }
+        }
+        console.log("Updated game table:");
+        displayTable();
+        resolve();
+      } else {
+        console.log("Invalid move");
+        resolve(anvil());
       }
     });
   });
